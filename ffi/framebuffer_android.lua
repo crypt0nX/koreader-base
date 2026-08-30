@@ -16,6 +16,15 @@ local full, partial, full_ui, partial_ui, fast, delay_page, delay_ui, delay_fast
 
 local framebuffer = {}
 
+-- Document-specific refresh policy used by the BOOX refresh plugin.
+function framebuffer:setFullOnly(enabled)
+    self.use_full_only = enabled and true or false
+end
+
+local function canUsePartialUpdate(screen)
+    return has_eink_full_support and not screen.use_full_only
+end
+
 -- update a region of the screen
 function framebuffer:_updatePartial(mode, delay, x, y, w, h)
     local bb = self.full_bb or self.bb
@@ -154,7 +163,7 @@ end
 
 function framebuffer:refreshPartialImp(x, y, w, h)
     self:_updateWindow()
-    if has_eink_full_support then
+    if canUsePartialUpdate(self) then
         self:_updatePartial(partial, delay_page, x, y, w, h)
     end
 end
@@ -168,7 +177,7 @@ end
 
 function framebuffer:refreshUIImp(x, y, w, h)
     self:_updateWindow()
-    if has_eink_full_support then
+    if canUsePartialUpdate(self) then
         self:_updatePartial(partial_ui, delay_ui, x, y, w, h)
     end
 end
@@ -182,7 +191,7 @@ end
 
 function framebuffer:refreshFastImp(x, y, w, h)
     self:_updateWindow()
-    if has_eink_full_support then
+    if canUsePartialUpdate(self) then
         self:_updatePartial(fast, delay_fast, x, y, w, h)
     end
 end
