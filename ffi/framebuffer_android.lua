@@ -12,13 +12,17 @@ local has_eink_screen, eink_platform = android.isEink()
 local has_eink_full_support = android.isEinkFull()
 
 
-local full, partial, full_ui, partial_ui, fast, delay_page, delay_ui, delay_fast = android.getEinkConstants()
+local full, partial, full_ui, partial_ui, fast, delay_page, delay_ui, delay_fast, partial_text = android.getEinkConstants()
 
 local framebuffer = {}
 
 -- Document-specific refresh policy used by the BOOX refresh plugin.
 function framebuffer:setFullOnly(enabled)
     self.use_full_only = enabled and true or false
+end
+
+function framebuffer:setTextWaveform(enabled)
+    self.use_text_waveform = enabled and true or false
 end
 
 local function canUsePartialUpdate(screen)
@@ -164,7 +168,8 @@ end
 function framebuffer:refreshPartialImp(x, y, w, h)
     self:_updateWindow()
     if canUsePartialUpdate(self) then
-        self:_updatePartial(partial, delay_page, x, y, w, h)
+        local mode = self.use_text_waveform and (partial_text or partial) or partial
+        self:_updatePartial(mode, delay_page, x, y, w, h)
     end
 end
 
