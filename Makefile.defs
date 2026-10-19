@@ -247,6 +247,11 @@ else ifeq ($(TARGET), cervantes)
 		CHOST?=arm-linux-gnueabi
 	endif
 	USE_LJ_WPACLIENT=1
+else ifeq ($(TARGET), bookeen)
+	CHOST?=arm-bookeen-linux-gnueabi
+	BOOKEEN=1
+	GLIBC_VERSION_MAX = 2.11
+	USE_LJ_WPACLIENT=1
 else ifndef TARGET
 	# if TARGET is not defined we will build an emulator on current machine
 	EMULATE_READER=1
@@ -578,6 +583,9 @@ else ifeq ($(TARGET), cervantes)
 		COMPAT_CFLAGS:=$(UBUNTU_COMPAT_CFLAGS)
 		COMPAT_CXXFLAGS:=$(UBUNTU_COMPAT_CFLAGS)
 	endif
+else ifeq ($(TARGET), bookeen)
+	TARGET_CFLAGS:=$(ARMV7_A8_ARCH)
+	TARGET_CFLAGS+=-mfloat-abi=softfp
 else ifeq ($(TARGET), arm-generic)
 	# Defaults to generic crap
 	TARGET_CFLAGS:=$(ARMV6_GENERIC_ARCH)
@@ -787,7 +795,7 @@ APPIMAGE_ARCH = $(or $(APPIMAGE_ARCH_$(LINUX_ARCH)),$(LINUX_ARCH))
 
 MKAPPIMAGE = $(THIRDPARTY_DIR)/appimage/build/mkappimage-$(APPIMAGE_ARCH).AppImage
 define MKAPPIMAGE_URL
-$(WGET) -O - https://api.github.com/repos/probonopd/go-appimage/releases | jq -r '.[]
+$(WGET) -O - $(if $(GH_TOKEN),--header='authorization: Bearer $(GH_TOKEN)') https://api.github.com/repos/probonopd/go-appimage/releases | jq -r '.[]
  | select(.tag_name == "continuous")
  | .assets[]
  | select(.name | test("^mkappimage-.*-$(APPIMAGE_ARCH).AppImage$$"))
@@ -984,6 +992,7 @@ set(KEEP_DEBUG         $(and $(filter -g%,$(BASE_CFLAGS)),1))
 
 # Platform flags.
 set(ANDROID        $(ANDROID))
+set(BOOKEEN        $(BOOKEEN))
 set(CERVANTES      $(CERVANTES))
 set(KINDLE         $(KINDLE))
 set(KOBO           $(KOBO))
